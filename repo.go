@@ -20,11 +20,11 @@ func RepoFindTodo(id int) Todo {
 	return Todo{}
 }
 
-func RepoCreateTodo(t Todo) int {
+func RepoCreateTodo(t Todo) Todo {
 	currentID += 1
 	t.ID = currentID
 	todos = append(todos, t)
-	return currentID
+	return t
 }
 
 func RepoDestroyTodo(id int) error {
