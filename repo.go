@@ -7,7 +7,8 @@ var currentID int
 var todos Todos
 
 func init() {
-
+	RepoCreateTodo(Todo{Name: "Write presentation"})
+	RepoCreateTodo(Todo{Name: "Host meetup"})
 }
 
 func RepoFindTodo(id int) Todo {

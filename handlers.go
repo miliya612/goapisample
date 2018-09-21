@@ -12,13 +12,9 @@ func Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 }
 
 func ToDoIndex(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	todos := Todos{
-		Todo{Name: "Write presentation"},
-		Todo{Name: "Host meetup"},
-	}
-
 	w.Header().Add("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
+
 	if err := json.NewEncoder(w).Encode(todos); err != nil {
 		panic(err)
 	}
