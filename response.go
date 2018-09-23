@@ -9,6 +9,7 @@ import (
 type Responder interface {
 	Write(w http.ResponseWriter)
 	Status() int
+	Body() []byte
 }
 
 type Response struct {
@@ -30,6 +31,10 @@ func (r Response) Status() int {
 	return r.status
 }
 
+func (r Response) Body() []byte {
+	return r.body
+}
+
 func (r Response) Header(k, v string) *Response {
 	r.header.Set(k, v)
 	return &r
@@ -43,8 +48,12 @@ func Json(status int, body interface{}) *Response {
 	return Respond(status, body).Header("Content-Type", "application/json; charset=UTF-8")
 }
 
-func Created(status int, body interface{}, location string) *Response {
-	return Json(status, body).Header("Location", location)
+func Ok(body interface{}) *Response {
+	return Json(http.StatusOK, body)
+}
+
+func Created(body interface{}, location string) *Response {
+	return Json(http.StatusCreated, body).Header("Location", location)
 }
 
 func Error(status int, message string, err error) *Response {

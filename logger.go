@@ -1,20 +1,21 @@
 package main
 
 import (
-	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
 	"time"
 )
 
-func logger(method, uri, name string, start time.Time) {
-	log.Printf("%s\t%s\t%s\t%s", method, uri, name, time.Since(start))
+func logger(status int, method, uri, name string, start time.Time, body []byte) {
+	log.Printf("%d\t%s\t%s\t%s\t%s\t%s", status, method, uri, name, time.Since(start), string(body))
+
 }
 
-func Logging(h httprouter.Handle, name string) httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func Logging(h MyHandle, name string) MyHandle {
+	return func(r *http.Request) Responder {
 		start := time.Now()
-		h(w, r, ps)
-		logger(r.Method, r.URL.EscapedPath(), name, start)
+		result := h(r)
+		logger(result.Status(), r.Method, r.URL.EscapedPath(), name, start, result.Body())
+		return result
 	}
 }

@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/julienschmidt/httprouter"
+	"github.com/gorilla/mux"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -12,98 +12,50 @@ import (
 
 var KB int64 = 1024
 
-func Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	fmt.Fprintln(w, "Welcome!")
+func Index(_ *http.Request) Responder {
+	return Respond(http.StatusOK, "welcome")
 }
 
-func TodoIndex(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	w.Header().Add("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-
-	if err := json.NewEncoder(w).Encode(todos); err != nil {
-		panic(err)
-	}
+func TodoIndex(_ *http.Request) Responder {
+	return Ok(todos)
 }
 
-func TodoShow(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	idParam := ps.ByName("todoId")
-	id, err := strconv.Atoi(idParam)
-	if err != nil {
-		w.Header().Add("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		if json.NewEncoder(w).Encode(err); err != nil {
-			panic(err)
-		}
-		return
-	}
+func TodoShow(r *http.Request) Responder {
+
+	id, _ := strconv.Atoi(mux.Vars(r)["todoId"])
 
 	t := RepoFindTodo(id)
+	fmt.Println(t)
 	if t.ID == 0 && t.Name == "" {
-		w.Header().Add("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusNotFound)
-		if json.NewEncoder(w).Encode(err); err != nil {
-			panic(err)
-		}
-		return
+		return Empty(http.StatusNotFound)
 	}
 
-	w.Header().Add("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-	if json.NewEncoder(w).Encode(t); err != nil {
-		panic(err)
-	}
-	return
+	return Ok(t)
 }
 
-func TodoCreate(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func TodoCreate(r *http.Request) Responder {
 	var todo Todo
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1024*KB)) // 1MB
 	if err != nil {
-		panic(err)
+		return Error(http.StatusInternalServerError, "request body is too large", err)
 	}
 	defer r.Body.Close()
 
 	if err := json.Unmarshal(body, &todo); err != nil {
-		w.Header().Add("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		if err := json.NewEncoder(w).Encode(err); err != nil {
-			panic(err)
-		}
-		return
+		return Error(http.StatusInternalServerError, "failed marshalling json", err)
 	}
 
 	t := RepoCreateTodo(todo)
 	location := fmt.Sprintf("http://%s/%d", r.Host, t.ID)
-	w.Header().Add("Content-Type", "application/json; charset=UTF-8")
-	w.Header().Add("Location", location)
-	w.WriteHeader(http.StatusCreated)
-	if err := json.NewEncoder(w).Encode(t); err != nil {
-		panic(err)
-	}
-	return
+	return Created(t, location)
 }
 
-func TodoDelete(w http.ResponseWriter, h *http.Request, ps httprouter.Params) {
-	idParams := ps.ByName("todoId")
-	id, err := strconv.Atoi(idParams)
-	if err != nil {
-		w.Header().Add("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		if err := json.NewEncoder(w).Encode(err); err != nil {
-			panic(err)
-		}
-		return
-	}
+func TodoDelete(r *http.Request) Responder {
+	id, _ := strconv.Atoi(mux.Vars(r)["todoId"])
 
 	if err := RepoDestroyTodo(id); err != nil {
-		w.Header().Add("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusNotFound)
-		if err := json.NewEncoder(w).Encode(err); err != nil {
-			panic(err)
-		}
-		return
+		return Empty(http.StatusNotFound)
 	}
 
-	w.WriteHeader(http.StatusNoContent)
-	return
+	return Empty(http.StatusNoContent)
 }
