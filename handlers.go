@@ -57,7 +57,7 @@ func TodoShow(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 func TodoCreate(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var todo Todo
-	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1024 * KB)) // 1MB
+	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1024*KB)) // 1MB
 	if err != nil {
 		panic(err)
 	}

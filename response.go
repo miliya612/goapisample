@@ -14,7 +14,7 @@ type Responder interface {
 type Response struct {
 	status int
 	header http.Header
-	body []byte
+	body   []byte
 }
 
 func (r *Response) Write(w http.ResponseWriter) {
@@ -71,7 +71,7 @@ func Respond(status int, body interface{}) *Response {
 
 	return &Response{
 		status: status,
-		body: b,
+		body:   b,
 		header: make(http.Header),
 	}
 }
