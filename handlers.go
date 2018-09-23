@@ -28,7 +28,6 @@ func TodoShow(r *http.Request) Responder {
 	}
 
 	t := RepoFindTodo(id)
-	fmt.Println(t)
 	if t.ID == 0 && t.Name == "" {
 		return Empty(http.StatusNotFound)
 	}

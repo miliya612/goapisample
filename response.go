@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 )
 
@@ -57,7 +56,6 @@ func Created(body interface{}, location string) *Response {
 }
 
 func Error(status int, message string, err error) *Response {
-	log.Printf("[%d]\t%s:\t%s", status, message, err)
 	switch status / 100 {
 	case 4, 5:
 		return Respond(status, message).Header("Content-Type", "application/json; charset=UTF-8")
