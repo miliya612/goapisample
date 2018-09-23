@@ -18,7 +18,7 @@ func Logging(h MyHandle, name string) MyHandle {
 	return func(r *http.Request) Responder {
 		start := time.Now()
 		result := h(r)
-		logger(result.Status(), r.Method, r.URL.EscapedPath(), name, start)
+		logger(result.Status(), r.Method, r.URL.EscapedPath(), name, start, result.Body())
 		return result
 	}
 }

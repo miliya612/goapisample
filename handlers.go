@@ -13,21 +13,36 @@ import (
 
 var KB int64 = 1024
 
+type TodoHandler struct {
+	repo Repository
+}
+
+func NewTodoHandler(repository Repository) TodoHandler {
+	return TodoHandler{repo: repository}
+}
+
 func Index(_ *http.Request) Responder {
 	return Respond(http.StatusOK, "welcome")
 }
 
-func TodoIndex(_ *http.Request) Responder {
+func (h *TodoHandler) TodoIndex(_ *http.Request) Responder {
+	todos, err := h.repo.GetAll()
+	if err != nil {
+		return Error(http.StatusInternalServerError, "something went wrong", err)
+	}
 	return Ok(todos)
 }
 
-func TodoShow(r *http.Request) Responder {
+func (h *TodoHandler) TodoShow(r *http.Request) Responder {
 	id, err := parseTodoId(r)
 	if err != nil {
 		return Error(http.StatusUnprocessableEntity, "invalid parameter", err)
 	}
 
-	t := RepoFindTodo(id)
+	t, err := h.repo.GetByID(id)
+	if err != nil {
+		return Error(http.StatusInternalServerError, "something went wrong", err)
+	}
 	if t.ID == 0 && t.Name == "" {
 		return Empty(http.StatusNotFound)
 	}
@@ -35,7 +50,7 @@ func TodoShow(r *http.Request) Responder {
 	return Ok(t)
 }
 
-func TodoCreate(r *http.Request) Responder {
+func (h *TodoHandler) TodoCreate(r *http.Request) Responder {
 	var todo Todo
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1024*KB)) // 1MB
 	if err != nil {
@@ -47,18 +62,22 @@ func TodoCreate(r *http.Request) Responder {
 		return Error(http.StatusInternalServerError, "failed marshalling json", err)
 	}
 
-	t := RepoCreateTodo(todo)
-	location := fmt.Sprintf("http://%s/%d", r.Host, t.ID)
-	return Created(t, location)
+	id, err := h.repo.Create(todo)
+	if err != nil {
+		return Error(http.StatusInternalServerError, "something went wrong", err)
+	}
+	todo.ID = id
+	location := fmt.Sprintf("http://%s/%d", r.Host, id)
+	return Created(todo, location)
 }
 
-func TodoDelete(r *http.Request) Responder {
+func (h *TodoHandler) TodoDelete(r *http.Request) Responder {
 	id, err := parseTodoId(r)
 	if err != nil {
 		return Error(http.StatusUnprocessableEntity, "invalid parameter", err)
 	}
 
-	if err = RepoDestroyTodo(id); err != nil {
+	if _, err = h.repo.Remove(id); err != nil {
 		return Empty(http.StatusNotFound)
 	}
 
