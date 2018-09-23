@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -21,8 +22,10 @@ func TodoIndex(_ *http.Request) Responder {
 }
 
 func TodoShow(r *http.Request) Responder {
-
-	id, _ := strconv.Atoi(mux.Vars(r)["todoId"])
+	id, err := parseTodoId(r)
+	if err != nil {
+		return Error(http.StatusUnprocessableEntity, "invalid parameter", err)
+	}
 
 	t := RepoFindTodo(id)
 	fmt.Println(t)
@@ -41,7 +44,7 @@ func TodoCreate(r *http.Request) Responder {
 	}
 	defer r.Body.Close()
 
-	if err := json.Unmarshal(body, &todo); err != nil {
+	if err = json.Unmarshal(body, &todo); err != nil {
 		return Error(http.StatusInternalServerError, "failed marshalling json", err)
 	}
 
@@ -51,11 +54,22 @@ func TodoCreate(r *http.Request) Responder {
 }
 
 func TodoDelete(r *http.Request) Responder {
-	id, _ := strconv.Atoi(mux.Vars(r)["todoId"])
+	id, err := parseTodoId(r)
+	if err != nil {
+		return Error(http.StatusUnprocessableEntity, "invalid parameter", err)
+	}
 
-	if err := RepoDestroyTodo(id); err != nil {
+	if err = RepoDestroyTodo(id); err != nil {
 		return Empty(http.StatusNotFound)
 	}
 
 	return Empty(http.StatusNoContent)
+}
+
+func parseTodoId(r *http.Request) (int, error) {
+	id, err := strconv.Atoi(mux.Vars(r)["todoId"])
+	if err != nil {
+		return -1, errors.New("todoId should be number.")
+	}
+	return id, nil
 }
