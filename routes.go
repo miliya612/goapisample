@@ -4,7 +4,7 @@ type Route struct {
 	Name        string
 	Method      string
 	Path        string
-	HandlerFunc MyHandle
+	HandlerFunc APIHandle
 }
 
 type Routes []Route

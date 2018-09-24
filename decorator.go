@@ -4,4 +4,4 @@ import (
 	"net/http"
 )
 
-type MyHandle func(*http.Request) Responder
+type APIHandle func(*http.Request) Responder

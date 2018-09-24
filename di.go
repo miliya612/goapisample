@@ -3,7 +3,7 @@ package main
 import "database/sql"
 
 type Injection struct {
-	handler Handler
+	handler  Handler
 	todoRepo Repository
 }
 
@@ -12,8 +12,8 @@ func Inject(db *sql.DB) Injection {
 	todoHandler := injectTodoHandler(todoRepo)
 	handler := injectHandler(todoHandler)
 	return Injection{
-		handler:     handler,
-		todoRepo:    todoRepo,
+		handler:  handler,
+		todoRepo: todoRepo,
 	}
 }
 

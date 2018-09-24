@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func decorator(h func(r *http.Request) Responder) func(http.ResponseWriter, *http.Request) {
+func decorator(h APIHandle) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		result := h(r)
 		result.Write(w)
