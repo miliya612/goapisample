@@ -2,15 +2,7 @@ package main
 
 import (
 	"github.com/gorilla/mux"
-	"net/http"
 )
-
-func decorator(h APIHandle) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		result := h(r)
-		result.Write(w)
-	}
-}
 
 func NewRouter() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
