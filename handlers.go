@@ -28,7 +28,12 @@ func Index(_ *http.Request) Responder {
 func (h *TodoHandler) TodoIndex(_ *http.Request) Responder {
 	todos, err := h.repo.GetAll()
 	if err != nil {
-		return Error(http.StatusInternalServerError, "something went wrong", err)
+		switch err.(type) {
+		case ErrNotFound:
+			return Ok(todos)
+		default:
+			return Error(http.StatusInternalServerError, "something went wrong", err)
+		}
 	}
 	return Ok(todos)
 }
@@ -41,10 +46,12 @@ func (h *TodoHandler) TodoShow(r *http.Request) Responder {
 
 	t, err := h.repo.GetByID(id)
 	if err != nil {
-		return Error(http.StatusInternalServerError, "something went wrong", err)
-	}
-	if t.ID == 0 && t.Name == "" {
-		return Empty(http.StatusNotFound)
+		switch err.(type) {
+		case ErrNotFound:
+			return Empty(http.StatusNotFound)
+		default:
+			return Error(http.StatusInternalServerError, "something went wrong", err)
+		}
 	}
 
 	return Ok(t)
@@ -77,8 +84,14 @@ func (h *TodoHandler) TodoDelete(r *http.Request) Responder {
 		return Error(http.StatusUnprocessableEntity, "invalid parameter", err)
 	}
 
-	if _, err = h.repo.Remove(id); err != nil {
-		return Empty(http.StatusNotFound)
+	_, err = h.repo.Remove(id)
+	if err != nil {
+		switch err.(type) {
+		case ErrNotFound:
+			return Empty(http.StatusNotFound)
+		default:
+			return Error(http.StatusInternalServerError, "something went wrong", err)
+		}
 	}
 
 	return Empty(http.StatusNoContent)

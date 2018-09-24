@@ -1,7 +1,7 @@
 package main
 
 import (
-	"database/sql"
+	"github.com/jinzhu/gorm"
 	"log"
 	"net/http"
 	"os"
@@ -21,10 +21,21 @@ func init() {
 
 func main() {
 	router := NewRouter()
-	db, err := sql.Open("postgres", "user=todoapp dbname=todoapp password=todopass sslmode=disable")
+	db, err := gorm.Open("postgres", "user=todoapp dbname=todoapp password=todopass sslmode=disable")
 	if err != nil {
 		panic(err)
 	}
+	db.AutoMigrate(&Todo{})
+	db.LogMode(true)
+
+	f, err := os.OpenFile("tmp/db.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatal("error opening file :", err.Error())
+	}
+	gl := gorm.Logger{
+		LogWriter: log.New(f, "\r\n", 0),
+	}
+	db.SetLogger(gl)
 
 	app = Inject(db)
 

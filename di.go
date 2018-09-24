@@ -1,13 +1,15 @@
 package main
 
-import "database/sql"
+import (
+	"github.com/jinzhu/gorm"
+)
 
 type Injection struct {
 	handler  Handler
 	todoRepo Repository
 }
 
-func Inject(db *sql.DB) Injection {
+func Inject(db *gorm.DB) Injection {
 	todoRepo := injectTodoRepo(db)
 	todoHandler := injectTodoHandler(todoRepo)
 	handler := injectHandler(todoHandler)
@@ -25,6 +27,6 @@ func injectTodoHandler(repository Repository) TodoHandler {
 	return NewTodoHandler(repository)
 }
 
-func injectTodoRepo(db *sql.DB) Repository {
+func injectTodoRepo(db *gorm.DB) Repository {
 	return NewTodoRepo(db)
 }
