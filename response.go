@@ -41,32 +41,32 @@ func (r Response) Header(k, v string) *Response {
 }
 
 func Empty(status int) *Response {
-	return Respond(status, nil)
+	return respond(status, nil)
 }
 
-func Json(status int, body interface{}) *Response {
-	return Respond(status, body).Header("Content-Type", "application/json; charset=UTF-8")
+func jsonBody(status int, body interface{}) *Response {
+	return respond(status, body).Header("Content-Type", "application/json; charset=UTF-8")
 }
 
 func Ok(body interface{}) *Response {
-	return Json(http.StatusOK, body)
+	return jsonBody(http.StatusOK, body)
 }
 
 func Created(body interface{}, location string) *Response {
-	return Json(http.StatusCreated, body).Header("Location", location)
+	return jsonBody(http.StatusCreated, body).Header("Location", location)
 }
 
 func Error(status int, message string, err error) *Response {
 	log.Printf("[ERROR]\t%s, %s", message, err)
 	switch status / 100 {
 	case 4, 5:
-		return Respond(status, message).Header("Content-Type", "application/json; charset=UTF-8")
+		return respond(status, message).Header("Content-Type", "application/json; charset=UTF-8")
 	default:
 		panic("status code is not 4xx or 5xx")
 	}
 }
 
-func Respond(status int, body interface{}) *Response {
+func respond(status int, body interface{}) *Response {
 	var b []byte
 	var err error
 	switch t := body.(type) {

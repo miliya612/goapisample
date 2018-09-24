@@ -19,8 +19,8 @@ func NewHandler(todo TodoHandler) Handler {
 
 var routes = Routes{
 	Route{"Index", "GET", "/", Index},
-	Route{"TodoIndex", "GET", "/todos", injection.handler.TodoIndex},
-	Route{"TodoShow", "GET", "/todos/{todoId}", injection.handler.TodoShow},
-	Route{"TodoCreate", "POST", "/todos", injection.handler.TodoCreate},
-	Route{"TodoDelete", "DELETE", "/todos/{todoId}", injection.handler.TodoDelete},
+	Route{"TodoIndex", "GET", "/todos", app.handler.TodoIndex},
+	Route{"TodoShow", "GET", "/todos/{todoId}", app.handler.TodoShow},
+	Route{"TodoCreate", "POST", "/todos", app.handler.TodoCreate},
+	Route{"TodoDelete", "DELETE", "/todos/{todoId}", app.handler.TodoDelete},
 }

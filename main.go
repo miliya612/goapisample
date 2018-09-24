@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-var injection Injection
+var app Injection
 
 func init() {
 	f, err := os.OpenFile("tmp/application.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
@@ -26,7 +26,7 @@ func main() {
 		panic(err)
 	}
 
-	injection = Inject(db)
+	app = Inject(db)
 
 	log.Printf("server started at: %v", time.Now())
 	log.Fatal(http.ListenAndServe(":8080", router))

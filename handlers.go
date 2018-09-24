@@ -22,7 +22,7 @@ func NewTodoHandler(repository Repository) TodoHandler {
 }
 
 func Index(_ *http.Request) Responder {
-	return Respond(http.StatusOK, "welcome")
+	return Empty(http.StatusOK)
 }
 
 func (h *TodoHandler) TodoIndex(_ *http.Request) Responder {
