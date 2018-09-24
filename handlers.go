@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi"
 	"github.com/pkg/errors"
 	"io"
 	"io/ioutil"
@@ -98,7 +98,7 @@ func (h *TodoHandler) TodoDelete(r *http.Request) Responder {
 }
 
 func parseTodoId(r *http.Request) (int, error) {
-	id, err := strconv.Atoi(mux.Vars(r)["todoId"])
+	id, err := strconv.Atoi(chi.URLParam(r, "todoId"))
 	if err != nil {
 		return -1, errors.New("todoId should be number.")
 	}
