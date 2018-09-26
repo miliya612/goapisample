@@ -13,7 +13,6 @@ func Inject(db *sql.DB) Injection {
 	handler := injectHandler(todoHandler)
 	return Injection{
 		handler:  handler,
-		todoRepo: todoRepo,
 	}
 }
 
