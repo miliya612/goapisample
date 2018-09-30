@@ -2,7 +2,7 @@ package repo
 
 import "github.com/miliya612/goapisample/domain/model"
 
-type Repository interface {
+type TodoRepo interface {
 	GetAll() (model.Todos, error)
 	GetByID(int) (model.Todo, error)
 	Create(todo model.Todo) (int, error)

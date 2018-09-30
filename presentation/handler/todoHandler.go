@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/miliya612/goapisample/domain/errUtil"
 	"github.com/miliya612/goapisample/domain/model"
-	"github.com/miliya612/goapisample/domain/repo"
+	"github.com/miliya612/goapisample/domain/service"
 	"github.com/miliya612/goapisample/presentation/httputil"
 	"github.com/pkg/errors"
 	"io"
@@ -24,15 +25,15 @@ type TodoHandler interface {
 }
 
 type todoHandler struct {
-	repo repo.Repository
+	service service.TodoService
 }
 
-func NewTodoHandler(repository repo.Repository) TodoHandler {
-	return &todoHandler{repo: repository}
+func NewTodoHandler(s service.TodoService) TodoHandler {
+	return &todoHandler{service: s}
 }
 
 func (h *todoHandler) TodoIndex(_ *http.Request) httputil.Responder {
-	todos, err := h.repo.GetAll()
+	todos, err := h.service.All()
 	if err != nil {
 		return httputil.Error(http.StatusInternalServerError, "something went wrong", err)
 	}
@@ -45,12 +46,14 @@ func (h *todoHandler) TodoShow(r *http.Request) httputil.Responder {
 		return httputil.Error(http.StatusUnprocessableEntity, "invalid parameter", err)
 	}
 
-	t, err := h.repo.GetByID(id)
+	t, err := h.service.Find(id)
 	if err != nil {
-		return httputil.Error(http.StatusInternalServerError, "something went wrong", err)
-	}
-	if t.ID == 0 && t.Name == "" {
-		return httputil.Empty(http.StatusNotFound)
+		switch err.(type) {
+		case errUtil.ErrTodoNotFound:
+			return httputil.Error(http.StatusNotFound, fmt.Sprintf("failed to search todo with id: %d", id), err)
+		default:
+			return httputil.Error(http.StatusInternalServerError, "something went wrong", err)
+		}
 	}
 
 	return httputil.Ok(t)
@@ -68,7 +71,7 @@ func (h *todoHandler) TodoCreate(r *http.Request) httputil.Responder {
 		return httputil.Error(http.StatusInternalServerError, "failed marshalling json", err)
 	}
 
-	id, err := h.repo.Create(todo)
+	id, err := h.service.Create(todo)
 	if err != nil {
 		return httputil.Error(http.StatusInternalServerError, "something went wrong", err)
 	}
@@ -83,8 +86,8 @@ func (h *todoHandler) TodoDelete(r *http.Request) httputil.Responder {
 		return httputil.Error(http.StatusUnprocessableEntity, "invalid parameter", err)
 	}
 
-	if _, err = h.repo.Remove(id); err != nil {
-		return httputil.Empty(http.StatusNotFound)
+	if err = h.service.Remove(id); err != nil {
+		return httputil.Error(http.StatusNotFound, fmt.Sprintf("failed to delete todo for id: %d", id), err)
 	}
 
 	return httputil.Empty(http.StatusNoContent)

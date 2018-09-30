@@ -2,6 +2,7 @@ package httputil
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -41,6 +42,9 @@ func (r Response) Header(k, v string) *Response {
 }
 
 func Empty(status int) *Response {
+	if isStatusCodeErrors(status) {
+		panic("status code is not 4xx or 5xx: Error() should be used for returning error response")
+	}
 	return respond(status, nil)
 }
 
@@ -58,12 +62,11 @@ func Created(body interface{}, location string) *Response {
 
 func Error(status int, message string, err error) *Response {
 	log.Printf("[ERROR]\t%s, %s", message, err)
-	switch status / 100 {
-	case 4, 5:
-		return respond(status, message).Header("Content-Type", "application/json; charset=UTF-8")
-	default:
-		panic("status code is not 4xx or 5xx")
+	msg := createErrMsg(status, fmt.Sprintf("%s: %s", message, err))
+	if !isStatusCodeErrors(status) {
+		return jsonBody(status, msg)
 	}
+	panic("status code is not 4xx or 5xx")
 }
 
 func respond(status int, body interface{}) *Response {
@@ -84,3 +87,19 @@ func respond(status int, body interface{}) *Response {
 		header: make(http.Header),
 	}
 }
+
+type errResp struct {
+	Error string `json:"error"`
+	Message string `json:"message"`
+}
+
+ func createErrMsg(code int, msg string) errResp {
+ 	return errResp{
+ 		Error: http.StatusText(code),
+ 		Message: msg,
+	}
+ }
+
+ func isStatusCodeErrors(code int) bool {
+ 	return code / 100 == 4 || code / 100 == 5
+ }
