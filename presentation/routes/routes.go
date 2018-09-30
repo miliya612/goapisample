@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"github.com/miliya612/goapisample/presentation/decorator"
 	"github.com/miliya612/goapisample/presentation/handler"
 )
 
@@ -9,7 +8,7 @@ type Route struct {
 	Name        string
 	Method      string
 	Path        string
-	HandlerFunc decorator.APIHandleFunc
+	HandlerFunc handler.APIHandleFunc
 }
 
 type Routes []Route
