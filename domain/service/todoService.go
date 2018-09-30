@@ -44,6 +44,12 @@ func (s todoService) Create(todo model.Todo) (id int, err error){
 }
 
 func (s todoService) Remove(id int) (err error){
-	_, err = s.repo.Remove(id)
+	count, err := s.repo.Remove(id)
+	if err != nil {
+		return
+	}
+	if count == 0 {
+		err = errUtil.ErrTodoNotFound{}
+	}
 	return
 }
