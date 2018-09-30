@@ -64,9 +64,9 @@ func Error(status int, message string, err error) *Response {
 	log.Printf("[ERROR]\t%s, %s", message, err)
 	msg := createErrMsg(status, fmt.Sprintf("%s: %s", message, err))
 	if !isStatusCodeErrors(status) {
-		return jsonBody(status, msg)
+		panic("status code is not 4xx or 5xx")
 	}
-	panic("status code is not 4xx or 5xx")
+	return jsonBody(status, msg)
 }
 
 func respond(status int, body interface{}) *Response {

@@ -3,6 +3,7 @@ package datastore
 import (
 	"database/sql"
 	_ "github.com/lib/pq"
+	"github.com/miliya612/goapisample/domain/errUtil"
 	"github.com/miliya612/goapisample/domain/model"
 	"github.com/miliya612/goapisample/domain/repo"
 )
@@ -35,6 +36,9 @@ func (repo todoRepo) GetAll() (todos model.Todos, err error) {
 func (repo todoRepo) GetByID(id int) (todo model.Todo, err error) {
 	todo = model.Todo{}
 	err = repo.db.QueryRow("select id, name, completed, due from todos where id = $1", id).Scan(&todo.ID, &todo.Name, &todo.Completed, &todo.Due)
+	if err == sql.ErrNoRows {
+		err = errUtil.ErrTodoNotFound{}
+	}
 	return
 }
 
@@ -55,7 +59,10 @@ func (repo todoRepo) Update(todo model.Todo) (model.Todo, error) {
 }
 
 func (repo todoRepo) Remove(id int) (int, error) {
-	//TODO: check the number of row
-	_, err := repo.db.Exec("delete from todos where id = $1", id)
+	result, err := repo.db.Exec("delete from todos where id = $1", id)
+	count, err := result.RowsAffected()
+	if count == 0 {
+		err = errUtil.ErrTodoNotFound{}
+	}
 	return id, err
 }
