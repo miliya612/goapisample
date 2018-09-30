@@ -17,7 +17,7 @@ type Registerer interface {
 	InjectTodoHandler() handler.TodoHandler
 }
 
-func (r *Registration) RegisterDBCon() *sql.DB {
+func (r *Registration) RegisterDB() *sql.DB {
 	db, err := sql.Open("postgres", "user=todoapp dbname=todoapp password=todopass sslmode=disable")
 	if err != nil {
 		panic(err)
@@ -26,7 +26,7 @@ func (r *Registration) RegisterDBCon() *sql.DB {
 }
 
 func (r *Registration) RegisterTodoRepo() repo.TodoRepo {
-	return datastore.NewTodoRepo(r.RegisterDBCon())
+	return datastore.NewTodoRepo(r.RegisterDB())
 }
 
 func (r *Registration) RegisterTodoService() service.TodoService {
