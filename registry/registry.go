@@ -11,7 +11,7 @@ import (
 type Registration struct {}
 
 type Registerer interface {
-	InjectDBCon() *sql.DB
+	InjectDB() *sql.DB
 	InjectTodoRepo() repo.TodoRepo
 	InjectTodoService() service.TodoService
 	InjectTodoHandler() handler.TodoHandler
